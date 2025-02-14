@@ -1,0 +1,8 @@
+version: "3"
+services:
+  liturgia:
+    build: .
+    container_name: liturgia-scrapper
+    restart: always
+    env_file:
+      - .env

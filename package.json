@@ -1,0 +1,39 @@
+{
+  "name": "liturgia-scrapper-typescript",
+  "version": "1.0.0",
+  "description": "Web scraper for liturgia website",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "npx tsx src/index.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/node-cron": "^3.0.11",
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.7",
+    "node-cron": "^3.0.3",
+    "openai": "^4.85.1",
+    "puppeteer": "^24.2.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "resend": "^4.1.2",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.3",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "ts-node": "^10.9.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.0.4"
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
+}
