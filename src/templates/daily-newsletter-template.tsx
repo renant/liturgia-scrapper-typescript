@@ -47,6 +47,15 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                 <tbody>
                   <tr>
                     <td align="center">
+                      <div style={{ marginBottom: "20px" }}>
+                        <img
+                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v20M5 12h14'/%3E%3C/svg%3E"
+                          alt=""
+                          width="32"
+                          height="32"
+                          style={{ display: "block", margin: "0 auto" }}
+                        />
+                      </div>
                       <h1
                         style={{
                           color: "#78350F",
@@ -86,19 +95,42 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
               <table cellPadding="0" cellSpacing="0" width="100%">
                 <tbody>
                   <tr>
-                    <td>
-                      <h2
-                        style={{
-                          color: "#78350F",
-                          fontSize: "20px",
-                          margin: "0 0 20px 0",
-                          fontFamily: "Georgia, serif",
-                          borderBottom: "2px solid #FED7AA",
-                          paddingBottom: "10px",
-                        }}
-                      >
-                        Leituras do Dia
-                      </h2>
+                    <td style={{ paddingBottom: "20px" }}>
+                      <table cellPadding="0" cellSpacing="0" width="100%">
+                        <tbody>
+                          <tr>
+                            <td width="24" style={{ paddingRight: "10px" }}>
+                              <img
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20'/%3E%3C/svg%3E"
+                                alt=""
+                                width="24"
+                                height="24"
+                              />
+                            </td>
+                            <td>
+                              <h2
+                                style={{
+                                  color: "#78350F",
+                                  fontSize: "20px",
+                                  margin: "0",
+                                  fontFamily: "Georgia, serif",
+                                }}
+                              >
+                                Leituras do Dia
+                              </h2>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style={{
+                        borderTop: "2px solid #FED7AA",
+                        paddingTop: "20px",
+                      }}
+                    >
                       {readings && readings.length > 0 ? (
                         readings.map((reading, index) => (
                           <div key={index} style={{ marginBottom: "30px" }}>
