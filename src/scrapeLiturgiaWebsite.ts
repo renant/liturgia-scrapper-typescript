@@ -21,6 +21,8 @@ export async function scrapeLiturgiaWebsite(): Promise<LiturgiaData | null> {
 
       if (liturgyDiv.length === 0) continue;
 
+      liturgyDiv.find(".embeds-audio").remove();
+
       const liturgy = liturgyDiv.html();
 
       if (liturgy) {

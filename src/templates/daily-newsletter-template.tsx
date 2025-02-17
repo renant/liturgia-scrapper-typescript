@@ -252,6 +252,68 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
             </tr>
           )}
 
+          {/* Share Section */}
+          <tr>
+            <td style={{ padding: "20px 30px", backgroundColor: "#ffffff" }}>
+              <table cellPadding="0" cellSpacing="0" width="100%">
+                <tbody>
+                  <tr>
+                    <td>
+                      <table cellPadding="0" cellSpacing="0" width="100%">
+                        <tbody>
+                          <tr>
+                            <td style={{ paddingBottom: "20px" }}>
+                              <h2
+                                style={{
+                                  color: "#78350F",
+                                  fontSize: "20px",
+                                  margin: "0 0 15px 0",
+                                  fontFamily: "Georgia, serif",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Compartilhe esta newsletter
+                              </h2>
+                              <p
+                                style={{
+                                  color: "#92400E",
+                                  fontSize: "16px",
+                                  margin: "0 0 20px 0",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Ajude-nos a espalhar a Palavra de Deus
+                              </p>
+                              <div style={{ textAlign: "center" }}>
+                                <a
+                                  href={`https://wa.me/?text=Estou%20compartilhando%20uma%20forma%20de%20ler%20a%20liturgia%20todos%20os%20dias%0ASe%20inscreve%20na%20liturgia%20diaria%20em%20https%3A%2F%2Fwww.liturgianews.site`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    display: "inline-block",
+                                    backgroundColor: "#25D366",
+                                    color: "#ffffff",
+                                    padding: "8px 20px",
+                                    borderRadius: "5px",
+                                    textDecoration: "none",
+                                    margin: "0 10px 10px 10px",
+                                    fontSize: "14px",
+                                  }}
+                                >
+                                  Compartilhar no WhatsApp
+                                </a>
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+
           {/* Footer */}
           <tr>
             <td
