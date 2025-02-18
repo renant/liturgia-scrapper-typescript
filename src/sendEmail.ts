@@ -30,18 +30,11 @@ async function sendEmailsWithBroadcast(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData
 ) {
-  const today = new Date();
-  const formattedDate = `${today.getDate().toString().padStart(2, "0")}/${(
-    today.getMonth() + 1
-  )
-    .toString()
-    .padStart(2, "0")}`;
-
   const { data, error } = await resend.broadcasts.create({
-    name: `Liturgia do Dia - ${formattedDate}`,
+    name: getFormattedEmailTitle(),
     audienceId: "07d60c4b-2ccd-4335-ac87-4ad4efdb776e",
-    from: "Liturgia do Dia <newsletter@liturgianews.site>",
-    subject: "Liturgia do Dia",
+    from: "LiturgiaNews <newsletter@liturgianews.site>",
+    subject: getFormattedEmailTitle(),
     react: createReactContent(liturgyData, saintOfTheDayData),
   });
 
@@ -81,9 +74,9 @@ async function sendEmailsWithContacts(
   saintOfTheDayData: SaintOfTheDayData
 ) {
   const { data, error } = await resend.emails.send({
-    from: "Liturgia do Dia <newsletter@liturgianews.site>",
-    to: "renan_replay@live.com",
-    subject: "Liturgia do Dia",
+    to: process.env.EMAIL_DEV_TEST ?? "",
+    from: "LiturgiaNews <newsletter@liturgianews.site>",
+    subject: getFormattedEmailTitle(),
     headers: {
       "X-Entity-Ref-ID": uuid(),
     },
@@ -95,4 +88,15 @@ async function sendEmailsWithContacts(
   } else {
     console.log("Email sent with success:", data);
   }
+}
+
+function getFormattedEmailTitle(): string {
+  const today = new Date();
+  const formattedDate = `${today.getDate().toString().padStart(2, "0")}/${(
+    today.getMonth() + 1
+  )
+    .toString()
+    .padStart(2, "0")}`;
+
+  return `Liturgia do Dia - ${formattedDate}`;
 }

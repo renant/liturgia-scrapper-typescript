@@ -14,8 +14,10 @@ const openai = new OpenAI({
 
 async function runDailyNewsletter() {
   try {
-    var liturgyData = await scrapeLiturgiaWebsite();
-    var saintOfTheDayData = await scrapeSaintOfTheDay();
+    const [liturgyData, saintOfTheDayData] = await Promise.all([
+      scrapeLiturgiaWebsite(),
+      scrapeSaintOfTheDay(),
+    ]);
 
     console.log("Liturgia do Dia:", liturgyData);
     console.log("Santo do Dia:", saintOfTheDayData);
