@@ -10,6 +10,7 @@ interface DailyNewsletterProps {
     resume: string;
     image?: string;
   };
+  reflection?: string;
 }
 
 const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
@@ -22,6 +23,7 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
   }),
   readings = [],
   saint = { name: "", link: "", resume: "", image: null },
+  reflection = null,
 }) => {
   return (
     <div>
@@ -155,6 +157,92 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
               </table>
             </td>
           </tr>
+
+          {/* Gospel Reflection */}
+          {reflection && (
+            <tr>
+              <td
+                style={{
+                  padding: "0 30px 40px 30px",
+                  backgroundColor: "#ffffff",
+                }}
+              >
+                <table cellPadding="0" cellSpacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <table cellPadding="0" cellSpacing="0" width="100%">
+                          <tbody>
+                            <tr>
+                              <td style={{ paddingBottom: "20px" }}>
+                                <table
+                                  cellPadding="0"
+                                  cellSpacing="0"
+                                  width="100%"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        width="24"
+                                        style={{ paddingRight: "10px" }}
+                                      >
+                                        <img
+                                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v20M5 12h14'/%3E%3C/svg%3E"
+                                          alt=""
+                                          width="32"
+                                          height="32"
+                                          style={{
+                                            display: "block",
+                                            margin: "0 auto",
+                                          }}
+                                        />
+                                      </td>
+                                      <td>
+                                        <h2
+                                          style={{
+                                            color: "#78350F",
+                                            fontSize: "20px",
+                                            margin: "0",
+                                            fontFamily: "Georgia, serif",
+                                          }}
+                                        >
+                                          Reflexão do Evangelho
+                                        </h2>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  padding: "20px",
+                                  backgroundColor: "#FFFBEB",
+                                  borderRadius: "6px",
+                                  borderTop: "2px solid #FED7AA",
+                                }}
+                              >
+                                <p
+                                  style={{
+                                    color: "#1F2937",
+                                    fontSize: "16px",
+                                    lineHeight: "1.6",
+                                  }}
+                                >
+                                  {reflection}
+                                </p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          )}
 
           {/* Saint of the Day */}
           {saint && saint.name && (

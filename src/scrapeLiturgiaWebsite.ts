@@ -40,6 +40,6 @@ export async function scrapeLiturgiaWebsite(): Promise<LiturgiaData | null> {
     console.error(error);
     return null;
   } finally {
-    console.log("Scraping done");
+    console.log("Scraping liturgy website finished");
   }
 }
