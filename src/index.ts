@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 import cron from "node-cron";
 import OpenAI from "openai";
+import { getRandomAffiliates } from "./affiliate/getAffiliates.js";
 import { scrapeLiturgiaWebsite } from "./scrapeLiturgiaWebsite.js";
 import { scrapeReflectionOfTheDay } from "./scrapeReflectionOfTheDay.js";
 import { scrapeSaintOfTheDay } from "./scrapeSaintOfTheDay.js";
@@ -15,17 +16,25 @@ const openai = new OpenAI({
 
 async function runDailyNewsletter() {
   try {
-    const [liturgyData, saintOfTheDayData, reflection] = await Promise.all([
-      scrapeLiturgiaWebsite(),
-      scrapeSaintOfTheDay(),
-      scrapeReflectionOfTheDay(),
-    ]);
+    const [liturgyData, saintOfTheDayData, reflection, randomAffiliates] =
+      await Promise.all([
+        scrapeLiturgiaWebsite(),
+        scrapeSaintOfTheDay(),
+        scrapeReflectionOfTheDay(),
+        getRandomAffiliates(),
+      ]);
 
     console.log("Liturgia do Dia:", liturgyData);
     console.log("Santo do Dia:", saintOfTheDayData.resume);
     console.log("Reflexão do Dia:", reflection);
+    console.log("Random Affiliates:", randomAffiliates);
 
-    await sendEmail(liturgyData, saintOfTheDayData, reflection);
+    await sendEmail(
+      liturgyData,
+      saintOfTheDayData,
+      reflection,
+      randomAffiliates
+    );
   } catch (error) {
     console.error("Error running daily newsletter:", error);
   }

@@ -11,6 +11,11 @@ interface DailyNewsletterProps {
     image?: string;
   };
   reflection?: string;
+  affiliates?: Array<{
+    link: string;
+    title: string;
+    author: string | null;
+  }>;
 }
 
 const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
@@ -24,6 +29,7 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
   readings = [],
   saint = { name: "", link: "", resume: "", image: null },
   reflection = null,
+  affiliates = [],
 }) => {
   return (
     <div>
@@ -328,6 +334,194 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                                     __html: saint.resume,
                                   }}
                                 />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          )}
+
+          {/* Support Section */}
+          {affiliates && (
+            <tr>
+              <td
+                style={{
+                  padding: "0 30px 40px 30px",
+                  backgroundColor: "#ffffff",
+                }}
+              >
+                <table cellPadding="0" cellSpacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <table cellPadding="0" cellSpacing="0" width="100%">
+                          <tbody>
+                            <tr>
+                              <td style={{ paddingBottom: "20px" }}>
+                                <table
+                                  cellPadding="0"
+                                  cellSpacing="0"
+                                  width="100%"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        width="24"
+                                        style={{ paddingRight: "10px" }}
+                                      >
+                                        <img
+                                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E"
+                                          alt=""
+                                          width="24"
+                                          height="24"
+                                        />
+                                      </td>
+                                      <td>
+                                        <h2
+                                          style={{
+                                            color: "#78350F",
+                                            fontSize: "20px",
+                                            margin: "0",
+                                            fontFamily: "Georgia, serif",
+                                          }}
+                                        >
+                                          Apoie Nossa Missão
+                                        </h2>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  padding: "20px",
+                                  backgroundColor: "#FFFBEB",
+                                  borderRadius: "6px",
+                                  borderTop: "2px solid #FED7AA",
+                                }}
+                              >
+                                <div style={{ marginBottom: "20px" }}>
+                                  <p
+                                    style={{
+                                      color: "#1F2937",
+                                      fontSize: "16px",
+                                      lineHeight: "1.6",
+                                      margin: "0 0 15px 0",
+                                    }}
+                                  >
+                                    Ajude-nos a manter esta newsletter gratuita
+                                    e alcançar mais pessoas
+                                  </p>
+                                  <p
+                                    style={{
+                                      color: "#666666",
+                                      fontSize: "14px",
+                                      margin: "0",
+                                    }}
+                                  >
+                                    <a
+                                      href="https://www.liturgianews.site/donate"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      Clique aqui para conhecer a forma de
+                                      doação
+                                    </a>
+                                  </p>
+                                </div>
+
+                                <div
+                                  style={{
+                                    borderTop: "1px solid #FED7AA",
+                                    paddingTop: "20px",
+                                  }}
+                                >
+                                  <p
+                                    style={{
+                                      color: "#78350F",
+                                      fontSize: "16px",
+                                      margin: "0 0 15px 0",
+                                      fontWeight: "500",
+                                    }}
+                                  >
+                                    Livros Recomendados:
+                                  </p>
+                                  <ul
+                                    style={{
+                                      listStyle: "none",
+                                      padding: "0",
+                                      margin: "0 0 15px 0",
+                                    }}
+                                  >
+                                    {affiliates?.map((affiliate, index) => (
+                                      <li
+                                        key={index}
+                                        style={{ marginBottom: "15px" }}
+                                      >
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "8px",
+                                          }}
+                                        >
+                                          <a
+                                            href={affiliate.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                              color: "#92400E",
+                                              textDecoration: "underline",
+                                              fontSize: "14px",
+                                              fontWeight: "500",
+                                            }}
+                                          >
+                                            {affiliate.title}
+                                            {affiliate.author &&
+                                              " por " + affiliate.author}
+                                          </a>
+                                        </div>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                  <p
+                                    style={{
+                                      margin: "20px 0 0 0",
+                                      fontSize: "14px",
+                                      color: "#666666",
+                                    }}
+                                  >
+                                    <a
+                                      href="https://amzn.to/41wJePa"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{
+                                        color: "#92400E",
+                                        textDecoration: "underline",
+                                      }}
+                                    >
+                                      Explore mais livros católicos →
+                                    </a>
+                                  </p>
+                                  <p
+                                    style={{
+                                      color: "#666666",
+                                      fontSize: "12px",
+                                      margin: "15px 0 0 0",
+                                      fontStyle: "italic",
+                                    }}
+                                  >
+                                    *Links afiliados. Sua compra ajuda a manter
+                                    nossa newsletter.
+                                  </p>
+                                </div>
                               </td>
                             </tr>
                           </tbody>

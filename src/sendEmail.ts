@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 import { Resend } from "resend";
 import { v4 as uuid } from "uuid";
+import { Affiliate } from "./affiliate/getAffiliates.js";
 import { LiturgiaData } from "./scrapeLiturgiaWebsite.js";
 import { ReflectionOfTheDayData } from "./scrapeReflectionOfTheDay.js";
 import { SaintOfTheDayData } from "./scrapeSaintOfTheDay.js";
@@ -13,15 +14,26 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function sendEmail(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
-  reflection: ReflectionOfTheDayData
+  reflection: ReflectionOfTheDayData,
+  affiliates: Affiliate[]
 ) {
   console.log("Sending email with liturgy data:", liturgyData);
 
   try {
     if (isProduction) {
-      await sendEmailsWithBroadcast(liturgyData, saintOfTheDayData, reflection);
+      await sendEmailsWithBroadcast(
+        liturgyData,
+        saintOfTheDayData,
+        reflection,
+        affiliates
+      );
     } else {
-      await sendEmailsWithContacts(liturgyData, saintOfTheDayData, reflection);
+      await sendEmailsWithContacts(
+        liturgyData,
+        saintOfTheDayData,
+        reflection,
+        affiliates
+      );
     }
   } catch (error) {
     console.error("Error sending email:", error);
@@ -31,14 +43,20 @@ export async function sendEmail(
 async function sendEmailsWithBroadcast(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
-  reflection: ReflectionOfTheDayData
+  reflection: ReflectionOfTheDayData,
+  affiliates: Affiliate[]
 ) {
   const { data, error } = await resend.broadcasts.create({
     name: getFormattedEmailTitle(),
     audienceId: "07d60c4b-2ccd-4335-ac87-4ad4efdb776e",
     from: "LiturgiaNews <newsletter@liturgianews.site>",
     subject: getFormattedEmailTitle(),
-    react: createReactContent(liturgyData, saintOfTheDayData, reflection),
+    react: createReactContent(
+      liturgyData,
+      saintOfTheDayData,
+      reflection,
+      affiliates
+    ),
   });
 
   if (error) {
@@ -53,7 +71,8 @@ async function sendEmailsWithBroadcast(
 async function createReactContent(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
-  reflection: ReflectionOfTheDayData
+  reflection: ReflectionOfTheDayData,
+  affiliates: Affiliate[]
 ) {
   return DailyNewsletterTemplate({
     date: new Date().toLocaleDateString("pt-BR", {
@@ -71,13 +90,15 @@ async function createReactContent(
       link: saintOfTheDayData.link,
     },
     reflection: reflection.text,
+    affiliates,
   });
 }
 
 async function sendEmailsWithContacts(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
-  reflection: ReflectionOfTheDayData
+  reflection: ReflectionOfTheDayData,
+  affiliates: Affiliate[]
 ) {
   const { data, error } = await resend.emails.send({
     to: process.env.EMAIL_DEV_TEST ?? "",
@@ -86,7 +107,12 @@ async function sendEmailsWithContacts(
     headers: {
       "X-Entity-Ref-ID": uuid(),
     },
-    react: createReactContent(liturgyData, saintOfTheDayData, reflection),
+    react: createReactContent(
+      liturgyData,
+      saintOfTheDayData,
+      reflection,
+      affiliates
+    ),
   });
 
   if (error) {
