@@ -8,6 +8,7 @@ import { sendEmail } from "./sendEmail.js";
 dotenv.config();
 
 const isProduction = process.env.IS_PRODUCTION === "true";
+const isRunNow = process.env.RUN_NOW === "true";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -46,6 +47,11 @@ if (isProduction) {
     );
     runDailyNewsletter();
   });
+
+  if (isRunNow) {
+    console.log("Running daily newsletter task immediately...");
+    runDailyNewsletter();
+  }
 } else {
   runDailyNewsletter();
 }
