@@ -5,6 +5,7 @@ import { Affiliate } from "./affiliate/getAffiliates.js";
 import { LiturgiaData } from "./scrapeLiturgiaWebsite.js";
 import { ReflectionOfTheDayData } from "./scrapeReflectionOfTheDay.js";
 import { SaintOfTheDayData } from "./scrapeSaintOfTheDay.js";
+import { FeedItem } from "./scrapeVaticanNews.js";
 import DailyNewsletterTemplate from "./templates/daily-newsletter-template.js";
 dotenv.config();
 
@@ -15,7 +16,8 @@ export async function sendEmail(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
   reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[]
+  affiliates: Affiliate[] | null,
+  vaticanNews: FeedItem[] | null
 ) {
   console.log("Sending email with liturgy data:", liturgyData);
 
@@ -25,14 +27,16 @@ export async function sendEmail(
         liturgyData,
         saintOfTheDayData,
         reflection,
-        affiliates
+        affiliates,
+        vaticanNews
       );
     } else {
       await sendEmailsWithContacts(
         liturgyData,
         saintOfTheDayData,
         reflection,
-        affiliates
+        affiliates,
+        vaticanNews
       );
     }
   } catch (error) {
@@ -44,7 +48,8 @@ async function sendEmailsWithBroadcast(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
   reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[]
+  affiliates: Affiliate[] | null,
+  vaticanNews: FeedItem[] | null
 ) {
   const { data, error } = await resend.broadcasts.create({
     name: getFormattedEmailTitle(),
@@ -55,7 +60,8 @@ async function sendEmailsWithBroadcast(
       liturgyData,
       saintOfTheDayData,
       reflection,
-      affiliates
+      affiliates,
+      vaticanNews
     ),
   });
 
@@ -72,7 +78,8 @@ async function createReactContent(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
   reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[]
+  affiliates: Affiliate[] | null,
+  vaticanNews: FeedItem[] | null
 ) {
   return DailyNewsletterTemplate({
     date: new Date().toLocaleDateString("pt-BR", {
@@ -91,6 +98,7 @@ async function createReactContent(
     },
     reflection: reflection.text,
     affiliates,
+    vaticanNews,
   });
 }
 
@@ -98,7 +106,8 @@ async function sendEmailsWithContacts(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
   reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[]
+  affiliates: Affiliate[],
+  vaticanNews: FeedItem[] | null
 ) {
   const { data, error } = await resend.emails.send({
     to: process.env.EMAIL_DEV_TEST ?? "",
@@ -111,7 +120,8 @@ async function sendEmailsWithContacts(
       liturgyData,
       saintOfTheDayData,
       reflection,
-      affiliates
+      affiliates,
+      vaticanNews
     ),
   });
 

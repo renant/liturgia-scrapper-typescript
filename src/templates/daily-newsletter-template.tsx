@@ -1,4 +1,5 @@
 import * as React from "react";
+import { FeedItem } from "../scrapeVaticanNews.js";
 
 interface DailyNewsletterProps {
   date: string;
@@ -16,6 +17,7 @@ interface DailyNewsletterProps {
     title: string;
     author: string | null;
   }>;
+  vaticanNews?: FeedItem[];
 }
 
 const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
@@ -29,7 +31,8 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
   readings = [],
   saint = { name: "", link: "", resume: "", image: null },
   reflection = null,
-  affiliates = [],
+  affiliates = null,
+  vaticanNews = null,
 }) => {
   return (
     <div>
@@ -334,6 +337,152 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                                     __html: saint.resume,
                                   }}
                                 />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          )}
+
+          {/* Vatican News Section */}
+          {vaticanNews && vaticanNews.length > 0 && (
+            <tr>
+              <td
+                style={{
+                  padding: "0 30px 40px 30px",
+                  backgroundColor: "#ffffff",
+                }}
+              >
+                <table cellPadding="0" cellSpacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <table cellPadding="0" cellSpacing="0" width="100%">
+                          <tbody>
+                            <tr>
+                              <td style={{ paddingBottom: "20px" }}>
+                                <table
+                                  cellPadding="0"
+                                  cellSpacing="0"
+                                  width="100%"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        width="24"
+                                        style={{ paddingRight: "10px" }}
+                                      >
+                                        <img
+                                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2392400E' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'%3E%3Cpath d='M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1M15 7v3m0 0v3m0-3h-3m3 0h3M9 11h.01M9 7h.01'/%3E%3Cpath d='M14 22l5-3-5-3'/%3E%3C/svg%3E"
+                                          alt=""
+                                          width="24"
+                                          height="24"
+                                        />
+                                      </td>
+                                      <td>
+                                        <h2
+                                          style={{
+                                            color: "#78350F",
+                                            fontSize: "20px",
+                                            margin: "0",
+                                            fontFamily: "Georgia, serif",
+                                          }}
+                                        >
+                                          Notícias do Vaticano
+                                        </h2>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td
+                                style={{
+                                  padding: "20px",
+                                  backgroundColor: "#FFFBEB",
+                                  borderRadius: "6px",
+                                  borderTop: "2px solid #FED7AA",
+                                }}
+                              >
+                                {vaticanNews.map((newsItem, index) => (
+                                  <div
+                                    key={index}
+                                    style={{
+                                      marginBottom:
+                                        index < vaticanNews.length - 1
+                                          ? "20px"
+                                          : "0",
+                                      paddingBottom:
+                                        index < vaticanNews.length - 1
+                                          ? "20px"
+                                          : "0",
+                                      borderBottom:
+                                        index < vaticanNews.length - 1
+                                          ? "1px solid #FED7AA"
+                                          : "none",
+                                    }}
+                                  >
+                                    <a
+                                      href={newsItem.link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{
+                                        color: "#92400E",
+                                        textDecoration: "none",
+                                        fontSize: "16px",
+                                        fontWeight: "500",
+                                        fontFamily: "Georgia, serif",
+                                      }}
+                                    >
+                                      {newsItem.title}
+                                    </a>
+                                    <p
+                                      style={{
+                                        color: "#666666",
+                                        fontSize: "12px",
+                                        margin: "6px 0 0 0",
+                                      }}
+                                    >
+                                      {new Date(
+                                        newsItem.pubDate
+                                      ).toLocaleDateString("pt-BR", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })}
+                                    </p>
+                                  </div>
+                                ))}
+                                <div
+                                  style={{
+                                    marginTop: "20px",
+                                    textAlign: "center",
+                                  }}
+                                >
+                                  <a
+                                    href="https://www.vaticannews.va/pt.html"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      display: "inline-block",
+                                      backgroundColor: "#f8fafc",
+                                      color: "#92400E",
+                                      padding: "6px 14px",
+                                      borderRadius: "5px",
+                                      textDecoration: "none",
+                                      fontSize: "13px",
+                                      border: "1px solid #FED7AA",
+                                    }}
+                                  >
+                                    Ver mais notícias
+                                  </a>
+                                </div>
                               </td>
                             </tr>
                           </tbody>

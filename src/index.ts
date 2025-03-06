@@ -5,11 +5,13 @@ import { getRandomAffiliates } from "./affiliate/getAffiliates.js";
 import { scrapeLiturgiaWebsite } from "./scrapeLiturgiaWebsite.js";
 import { scrapeReflectionOfTheDay } from "./scrapeReflectionOfTheDay.js";
 import { scrapeSaintOfTheDay } from "./scrapeSaintOfTheDay.js";
+import { scrapeVaticanNews } from "./scrapeVaticanNews.js";
 import { sendEmail } from "./sendEmail.js";
 dotenv.config();
 
 const isProduction = process.env.IS_PRODUCTION === "true";
 const isRunNow = process.env.RUN_NOW === "true";
+const addDonate = process.env.ADD_DONATE === "true";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -17,24 +19,26 @@ const openai = new OpenAI({
 
 async function runDailyNewsletter() {
   try {
-    const [liturgyData, saintOfTheDayData, reflection, randomAffiliates] =
-      await Promise.all([
-        scrapeLiturgiaWebsite(),
-        scrapeSaintOfTheDay(),
-        scrapeReflectionOfTheDay(),
-        getRandomAffiliates(),
-      ]);
-
-    console.log("Liturgia do Dia:", liturgyData);
-    console.log("Santo do Dia:", saintOfTheDayData.resume);
-    console.log("Reflexão do Dia:", reflection);
-    console.log("Random Affiliates:", randomAffiliates);
+    const [
+      liturgyData,
+      saintOfTheDayData,
+      reflection,
+      randomAffiliates,
+      vaticanNewsData,
+    ] = await Promise.all([
+      scrapeLiturgiaWebsite(),
+      scrapeSaintOfTheDay(),
+      scrapeReflectionOfTheDay(),
+      getRandomAffiliates(),
+      scrapeVaticanNews(),
+    ]);
 
     await sendEmail(
       liturgyData,
       saintOfTheDayData,
       reflection,
-      randomAffiliates
+      addDonate ? randomAffiliates : null,
+      vaticanNewsData
     );
   } catch (error) {
     console.error("Error running daily newsletter:", error);
