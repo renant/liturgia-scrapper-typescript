@@ -76,7 +76,7 @@ async function sendEmailsWithBroadcast(
 
 async function createReactContent(
   liturgyData: LiturgiaData | null,
-  saintOfTheDayData: SaintOfTheDayData,
+  saintOfTheDayData: SaintOfTheDayData | null,
   reflection: ReflectionOfTheDayData,
   affiliates: Affiliate[] | null,
   vaticanNews: FeedItem[] | null
@@ -91,10 +91,10 @@ async function createReactContent(
     title: liturgyData?.title ?? "Liturgia Católica Diária",
     readings: liturgyData?.liturgies ?? [],
     saint: {
-      name: saintOfTheDayData.name,
-      image: saintOfTheDayData.imageBase64,
-      resume: saintOfTheDayData.resume,
-      link: saintOfTheDayData.link,
+      name: saintOfTheDayData?.name ?? "",
+      image: saintOfTheDayData?.imageBase64 ?? "",
+      resume: saintOfTheDayData?.resume ?? "",
+      link: saintOfTheDayData?.link ?? "",
     },
     reflection: reflection.text,
     affiliates,
