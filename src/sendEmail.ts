@@ -96,7 +96,7 @@ async function createReactContent(
       resume: saintOfTheDayData?.resume ?? "",
       link: saintOfTheDayData?.link ?? "",
     },
-    reflection: reflection.text,
+    reflection: reflection?.text ?? null,
     affiliates,
     vaticanNews,
   });
