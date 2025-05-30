@@ -9,6 +9,9 @@ export interface FeedItem {
   description?: string;
 }
 
+/**
+ * Fetches the Vatican News RSS feed as XML text.
+ */
 async function fetchRssFeed() {
   try {
     const response = await axios.get("https://www.vaticannews.va/pt.rss.xml", {
@@ -21,6 +24,9 @@ async function fetchRssFeed() {
   }
 }
 
+/**
+ * Parses the RSS XML string into a JS object.
+ */
 async function parseRssFeed(xml: string): Promise<any> {
   try {
     const result = await parseStringPromise(xml);
@@ -31,17 +37,27 @@ async function parseRssFeed(xml: string): Promise<any> {
   }
 }
 
+/**
+ * Extracts feed items from the parsed RSS data.
+ */
 async function extractFeedItems(parsedData: any): Promise<FeedItem[]> {
+  if (!parsedData?.rss?.channel?.[0]?.item) {
+    console.warn("No items found in parsed RSS data.");
+    return [];
+  }
   const items = parsedData.rss.channel[0].item.map((item: any) => ({
-    title: item.title[0].replace(/\n/g, "").trim(),
-    link: item.link[0].replace(/\n/g, "").trim(),
-    pubDate: item.pubDate[0].replace(/\n/g, "").trim(),
-    description: item.description?.[0]?.replace(/\n/g, "").trim(),
+    title: item.title?.[0]?.replace(/\n/g, "").trim() ?? "",
+    link: item.link?.[0]?.replace(/\n/g, "").trim() ?? "",
+    pubDate: item.pubDate?.[0]?.replace(/\n/g, "").trim() ?? "",
+    description: item.description?.[0]?.replace(/\n/g, "").trim() ?? "",
   }));
-
   return items;
 }
 
+/**
+ * Scrapes the latest Vatican News items from the RSS feed.
+ * Returns up to 6 most recent items, sorted by date.
+ */
 export async function scrapeVaticanNews(): Promise<FeedItem[]> {
   try {
     const xml = await fetchRssFeed();
@@ -51,22 +67,23 @@ export async function scrapeVaticanNews(): Promise<FeedItem[]> {
     const topItems = feedItems
       .map((item) => ({
         ...item,
-        formattedPubDate: new Date(item.pubDate).toLocaleDateString("pt-BR", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
+        formattedPubDate: item.pubDate
+          ? new Date(item.pubDate).toLocaleDateString("pt-BR", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : "",
       }))
       .sort(
         (a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()
       )
       .slice(0, 6);
 
+    console.info(`Scraped ${topItems.length} Vatican News items.`);
     return topItems;
-
-    return feedItems;
   } catch (error) {
     console.error("Error in scrapeVaticanNews:", error);
-    throw new Error("Failed to scrape Vatican News");
+    return [];
   }
 }

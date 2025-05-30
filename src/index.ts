@@ -13,12 +13,21 @@ const isProduction = process.env.IS_PRODUCTION === "true";
 const isRunNow = process.env.RUN_NOW === "true";
 const addDonate = process.env.ADD_DONATE === "true";
 
+if (!process.env.OPENAI_API_KEY) {
+  console.error("OPENAI_API_KEY is not set in environment variables.");
+  throw new Error("Missing OPENAI_API_KEY");
+}
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+/**
+ * Runs the daily newsletter workflow: scrapes all data and sends the email.
+ */
 async function runDailyNewsletter() {
   try {
+    console.info("Starting daily newsletter workflow...");
     const [
       liturgyData,
       saintOfTheDayData,
@@ -40,6 +49,7 @@ async function runDailyNewsletter() {
       addDonate ? randomAffiliates : null,
       vaticanNewsData
     );
+    console.info("Daily newsletter workflow completed.");
   } catch (error) {
     console.error("Error running daily newsletter:", error);
   }
@@ -53,6 +63,7 @@ console.log(
 );
 
 if (isProduction) {
+  // Run every day at 9:00 AM server time
   cron.schedule("0 9 * * *", () => {
     console.log(
       "Running daily newsletter task at:",
@@ -66,5 +77,6 @@ if (isProduction) {
     runDailyNewsletter();
   }
 } else {
+  // In development, run immediately
   runDailyNewsletter();
 }
