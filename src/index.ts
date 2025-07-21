@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import cron from "node-cron";
 import OpenAI from "openai";
 import { getRandomAffiliates } from "./affiliate/getAffiliates.js";
+import { saveInSubabase } from "./saveInSupabase.js";
 import { scrapeLiturgiaWebsite } from "./scrapeLiturgiaWebsite.js";
 import { scrapeReflectionOfTheDay } from "./scrapeReflectionOfTheDay.js";
 import { scrapeSaintOfTheDay } from "./scrapeSaintOfTheDay.js";
@@ -28,6 +29,7 @@ const openai = new OpenAI({
 async function runDailyNewsletter() {
   try {
     console.info("Starting daily newsletter workflow...");
+
     const [
       liturgyData,
       saintOfTheDayData,
@@ -49,6 +51,14 @@ async function runDailyNewsletter() {
       addDonate ? randomAffiliates : null,
       vaticanNewsData
     );
+
+    await saveInSubabase(
+      liturgyData,
+      saintOfTheDayData,
+      reflection,
+      vaticanNewsData
+    );
+
     console.info("Daily newsletter workflow completed.");
   } catch (error) {
     console.error("Error running daily newsletter:", error);
