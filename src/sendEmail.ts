@@ -125,7 +125,7 @@ async function sendEmailsWithContacts(
   liturgyData: LiturgiaData | null,
   saintOfTheDayData: SaintOfTheDayData,
   reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[],
+  affiliates: Affiliate[] | null,
   vaticanNews: FeedItem[] | null
 ) {
   const toEmail = process.env.EMAIL_DEV_TEST ?? "";

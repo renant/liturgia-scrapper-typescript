@@ -1,8 +1,7 @@
 import * as dotenv from "dotenv";
 import cron from "node-cron";
-import OpenAI from "openai";
 import { getRandomAffiliates } from "./affiliate/getAffiliates.js";
-import { saveInSubabase } from "./saveInSupabase.js";
+import { checkIfNewsletterExists, saveInSupabase } from "./saveInSupabase.js";
 import { scrapeLiturgiaWebsite } from "./scrapeLiturgiaWebsite.js";
 import { scrapeReflectionOfTheDay } from "./scrapeReflectionOfTheDay.js";
 import { scrapeSaintOfTheDay } from "./scrapeSaintOfTheDay.js";
@@ -14,21 +13,21 @@ const isProduction = process.env.IS_PRODUCTION === "true";
 const isRunNow = process.env.RUN_NOW === "true";
 const addDonate = process.env.ADD_DONATE === "true";
 
-if (!process.env.OPENAI_API_KEY) {
-  console.error("OPENAI_API_KEY is not set in environment variables.");
-  throw new Error("Missing OPENAI_API_KEY");
-}
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 /**
  * Runs the daily newsletter workflow: scrapes all data and sends the email.
  */
 async function runDailyNewsletter() {
   try {
     console.info("Starting daily newsletter workflow...");
+
+    // Verifica se a liturgia do dia já foi criada
+    const newsletterExists = await checkIfNewsletterExists();
+    if (newsletterExists) {
+      console.info(
+        "Newsletter for today already exists. Skipping email sending and database insertion."
+      );
+      return;
+    }
 
     const [
       liturgyData,
@@ -52,7 +51,7 @@ async function runDailyNewsletter() {
       vaticanNewsData
     );
 
-    await saveInSubabase(
+    await saveInSupabase(
       liturgyData,
       saintOfTheDayData,
       reflection,

@@ -27,15 +27,54 @@ function getSlugFromDate(dateString: string): string {
   return `${day}-${month}-${year}`;
 }
 
-export async function saveInSubabase(
+/**
+ * Checks if a newsletter for today's date already exists in Supabase.
+ * Returns true if it exists, false otherwise.
+ */
+export async function checkIfNewsletterExists(): Promise<boolean> {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    throw new Error(
+      "SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment variables"
+    );
+  }
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+  );
+
+  const slug = getSlugFromDate(new Date().toISOString());
+
+  const { data, error } = await supabase
+    .from("newsletter")
+    .select("slug")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error checking if newsletter exists:", error);
+    // Em caso de erro, retornamos false para não bloquear o processo
+    return false;
+  }
+
+  return data !== null;
+}
+
+export async function saveInSupabase(
   liturgyData: LiturgiaData,
   saintOfTheDayData: SaintOfTheDayData,
   reflection: ReflectionOfTheDayData,
   vaticanNewsData: FeedItem[]
 ) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    throw new Error(
+      "SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment variables"
+    );
+  }
+
   const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
   );
 
   const slug = getSlugFromDate(new Date().toISOString());
