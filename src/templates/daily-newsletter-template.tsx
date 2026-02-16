@@ -60,7 +60,7 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                     <td align="center">
                       <div style={{ marginBottom: "20px" }}>
                         <img
-                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v20M5 12h14'/%3E%3C/svg%3E"
+                          src="https://www.liturgianews.site/email/icon1.svg"
                           alt=""
                           width="32"
                           height="32"
@@ -112,8 +112,8 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                           <tr>
                             <td width="24" style={{ paddingRight: "10px" }}>
                               <img
-                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20'/%3E%3C/svg%3E"
-                                alt=""
+                                src="https://www.liturgianews.site/email/icon2.svg"
+                                alt="icon2"
                                 width="24"
                                 height="24"
                               />
@@ -196,8 +196,8 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                                         style={{ paddingRight: "10px" }}
                                       >
                                         <img
-                                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v20M5 12h14'/%3E%3C/svg%3E"
-                                          alt=""
+                                          src="https://www.liturgianews.site/email/icon4.svg"
+                                          alt="icon4"
                                           width="32"
                                           height="32"
                                           style={{
@@ -378,8 +378,8 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                                         style={{ paddingRight: "10px" }}
                                       >
                                         <img
-                                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2392400E' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'%3E%3Cpath d='M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1M15 7v3m0 0v3m0-3h-3m3 0h3M9 11h.01M9 7h.01'/%3E%3Cpath d='M14 22l5-3-5-3'/%3E%3C/svg%3E"
-                                          alt=""
+                                          src="https://www.liturgianews.site/email/icon1.svg"
+                                          alt="icon1"
                                           width="24"
                                           height="24"
                                         />
@@ -450,7 +450,7 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                                       }}
                                     >
                                       {new Date(
-                                        newsItem.pubDate
+                                        newsItem.pubDate,
                                       ).toLocaleDateString("pt-BR", {
                                         day: "2-digit",
                                         month: "2-digit",
@@ -524,8 +524,8 @@ const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
                                         style={{ paddingRight: "10px" }}
                                       >
                                         <img
-                                          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E"
-                                          alt=""
+                                          src="https://www.liturgianews.site/email/icon5.svg"
+                                          alt="icon1"
                                           width="24"
                                           height="24"
                                         />
