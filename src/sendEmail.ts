@@ -1,175 +1,116 @@
 import * as dotenv from "dotenv";
+import type { ReactElement } from "react";
 import { Resend } from "resend";
 import { v4 as uuid } from "uuid";
 import { Affiliate } from "./affiliate/getAffiliates.js";
+import { CivilDate, formatEmailSubject, formatLongPtBr } from "./dates.js";
 import { LiturgiaData } from "./scrapeLiturgiaWebsite.js";
 import { ReflectionOfTheDayData } from "./scrapeReflectionOfTheDay.js";
 import { SaintOfTheDayData } from "./scrapeSaintOfTheDay.js";
 import { FeedItem } from "./scrapeVaticanNews.js";
 import DailyNewsletterTemplate from "./templates/daily-newsletter-template.js";
-dotenv.config();
 
-const isProduction = process.env.IS_PRODUCTION === "true";
+const AUDIENCE_ID = "07d60c4b-2ccd-4335-ac87-4ad4efdb776e";
 
-if (!process.env.RESEND_API_KEY) {
-  console.error("RESEND_API_KEY is not set in environment variables.");
-  throw new Error("Missing RESEND_API_KEY");
-}
-const resend = new Resend(process.env.RESEND_API_KEY);
+export type SendEmailInput = {
+  date: CivilDate;
+  liturgyData: LiturgiaData | null;
+  saintOfTheDayData: SaintOfTheDayData | null;
+  reflection: ReflectionOfTheDayData | null;
+  vaticanNews: FeedItem[] | null;
+  affiliates: Affiliate[] | null;
+  /** Production only: called after the broadcast exists and before it is sent. */
+  onBroadcastCreated?: (broadcastId: string) => Promise<void>;
+};
 
 /**
- * Sends the daily newsletter email using either broadcast or direct email depending on environment.
+ * Sends the daily newsletter. Returns the Resend broadcast id in production
+ * and the email id in development. Throws when Resend returns an error.
  */
-export async function sendEmail(
-  liturgyData: LiturgiaData | null,
-  saintOfTheDayData: SaintOfTheDayData,
-  reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[] | null,
-  vaticanNews: FeedItem[] | null
-) {
-  console.info("Preparing to send email with liturgy data.");
-  try {
-    if (isProduction) {
-      await sendEmailsWithBroadcast(
-        liturgyData,
-        saintOfTheDayData,
-        reflection,
-        affiliates,
-        vaticanNews
-      );
-    } else {
-      await sendEmailsWithContacts(
-        liturgyData,
-        saintOfTheDayData,
-        reflection,
-        affiliates,
-        vaticanNews
+export async function sendEmail(input: SendEmailInput): Promise<string> {
+  if (process.env.IS_PRODUCTION === "true") {
+    return sendBroadcast(input);
+  }
+  return sendDevEmail(input);
+}
+
+async function sendBroadcast(input: SendEmailInput): Promise<string> {
+  const resend = getResend();
+  const subject = formatEmailSubject(input.date);
+  const created = await resend.broadcasts.create({
+    name: subject,
+    audienceId: AUDIENCE_ID,
+    from: "LiturgiaNews <newsletter@liturgianews.site>",
+    subject,
+    react: (await reactContent(input)) as ReactElement,
+  });
+  if (created.error || !created.data?.id) {
+    throw new Error(
+      created.error?.message ?? "Resend did not return a broadcast id"
+    );
+  }
+
+  if (input.onBroadcastCreated) {
+    try {
+      await input.onBroadcastCreated(created.data.id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Broadcast ${created.data.id} was created but not recorded: ${message}`
       );
     }
-  } catch (error) {
-    console.error("Error sending email:", error);
   }
+
+  const sent = await resend.broadcasts.send(created.data.id);
+  if (sent.error) {
+    throw new Error(sent.error.message ?? "Resend broadcast send failed");
+  }
+  return created.data.id;
 }
 
-/**
- * Sends the newsletter using Resend's broadcast feature (for production).
- */
-async function sendEmailsWithBroadcast(
-  liturgyData: LiturgiaData | null,
-  saintOfTheDayData: SaintOfTheDayData,
-  reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[] | null,
-  vaticanNews: FeedItem[] | null
-) {
-  try {
-    const { data, error } = await resend.broadcasts.create({
-      name: getFormattedEmailTitle(),
-      audienceId: "07d60c4b-2ccd-4335-ac87-4ad4efdb776e",
-      from: "LiturgiaNews <newsletter@liturgianews.site>",
-      subject: getFormattedEmailTitle(),
-      react: await createReactContent(
-        liturgyData,
-        saintOfTheDayData,
-        reflection,
-        affiliates,
-        vaticanNews
-      ),
-    });
-
-    if (error) {
-      console.error("Error sending email with broadcast:", error);
-    } else {
-      console.info("Email sent successfully with broadcast:", data);
-      await resend.broadcasts.send(data.id);
-    }
-  } catch (err) {
-    console.error("Exception in sendEmailsWithBroadcast:", err);
+async function sendDevEmail(input: SendEmailInput): Promise<string> {
+  const toEmail = process.env.EMAIL_DEV_TEST ?? "";
+  if (!toEmail) {
+    throw new Error("EMAIL_DEV_TEST is not set in environment variables.");
   }
-}
-
-/**
- * Creates the React content for the newsletter email.
- */
-async function createReactContent(
-  liturgyData: LiturgiaData | null,
-  saintOfTheDayData: SaintOfTheDayData | null,
-  reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[] | null,
-  vaticanNews: FeedItem[] | null
-) {
-  return DailyNewsletterTemplate({
-    date: new Date().toLocaleDateString("pt-BR", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }),
-    title: liturgyData?.title ?? "Liturgia Católica Diária",
-    readings: liturgyData?.liturgies ?? [],
-    saint: {
-      name: saintOfTheDayData?.name ?? "",
-      image: saintOfTheDayData?.imageBase64 ?? "",
-      resume: saintOfTheDayData?.resume ?? "",
-      link: saintOfTheDayData?.link ?? "",
+  const resend = getResend();
+  const { data, error } = await resend.emails.send({
+    to: toEmail,
+    from: "LiturgiaNews <newsletter@liturgianews.site>",
+    subject: formatEmailSubject(input.date),
+    headers: {
+      "X-Entity-Ref-ID": uuid(),
     },
-    reflection: reflection?.text ?? null,
-    affiliates,
-    vaticanNews,
+    react: (await reactContent(input)) as ReactElement,
+  });
+  if (error || !data?.id) {
+    throw new Error(error?.message ?? "Resend did not return an email id");
+  }
+  return data.id;
+}
+
+async function reactContent(input: SendEmailInput) {
+  return DailyNewsletterTemplate({
+    date: formatLongPtBr(input.date),
+    title: input.liturgyData?.title ?? "Liturgia Católica Diária",
+    readings: input.liturgyData?.liturgies ?? [],
+    saint: {
+      name: input.saintOfTheDayData?.name ?? "",
+      image: input.saintOfTheDayData?.imageBase64 ?? "",
+      resume: input.saintOfTheDayData?.resume ?? "",
+      link: input.saintOfTheDayData?.link ?? "",
+    },
+    reflection: input.reflection?.text ?? undefined,
+    affiliates: input.affiliates,
+    vaticanNews: input.vaticanNews,
   });
 }
 
-/**
- * Sends the newsletter to a test/dev email address (for development).
- */
-async function sendEmailsWithContacts(
-  liturgyData: LiturgiaData | null,
-  saintOfTheDayData: SaintOfTheDayData,
-  reflection: ReflectionOfTheDayData,
-  affiliates: Affiliate[] | null,
-  vaticanNews: FeedItem[] | null
-) {
-  const toEmail = process.env.EMAIL_DEV_TEST ?? "";
-  if (!toEmail) {
-    console.error("EMAIL_DEV_TEST is not set in environment variables.");
-    return;
+function getResend(): Resend {
+  dotenv.config();
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing RESEND_API_KEY");
   }
-  try {
-    const { data, error } = await resend.emails.send({
-      to: toEmail,
-      from: "LiturgiaNews <newsletter@liturgianews.site>",
-      subject: getFormattedEmailTitle(),
-      headers: {
-        "X-Entity-Ref-ID": uuid(),
-      },
-      react: await createReactContent(
-        liturgyData,
-        saintOfTheDayData,
-        reflection,
-        affiliates,
-        vaticanNews
-      ),
-    });
-
-    if (error) {
-      console.error("Error sending email with contacts:", error);
-    } else {
-      console.info("Email sent successfully:", data);
-    }
-  } catch (err) {
-    console.error("Exception in sendEmailsWithContacts:", err);
-  }
-}
-
-/**
- * Returns the formatted email title for the newsletter.
- */
-function getFormattedEmailTitle(): string {
-  const today = new Date();
-  const formattedDate = `${today.getDate().toString().padStart(2, "0")}/${(
-    today.getMonth() + 1
-  )
-    .toString()
-    .padStart(2, "0")}`;
-
-  return `Liturgia do Dia - ${formattedDate}`;
+  return new Resend(apiKey);
 }

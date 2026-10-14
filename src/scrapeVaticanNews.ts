@@ -58,7 +58,7 @@ async function extractFeedItems(parsedData: any): Promise<FeedItem[]> {
  * Scrapes the latest Vatican News items from the RSS feed.
  * Returns up to 6 most recent items, sorted by date.
  */
-export async function scrapeVaticanNews(): Promise<FeedItem[]> {
+export async function scrapeVaticanNews(): Promise<FeedItem[] | null> {
   try {
     const xml = await fetchRssFeed();
     const parsedData = await parseRssFeed(xml);
@@ -69,6 +69,7 @@ export async function scrapeVaticanNews(): Promise<FeedItem[]> {
         ...item,
         formattedPubDate: item.pubDate
           ? new Date(item.pubDate).toLocaleDateString("pt-BR", {
+              timeZone: "America/Sao_Paulo",
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -84,6 +85,6 @@ export async function scrapeVaticanNews(): Promise<FeedItem[]> {
     return topItems;
   } catch (error) {
     console.error("Error in scrapeVaticanNews:", error);
-    return [];
+    return null;
   }
 }

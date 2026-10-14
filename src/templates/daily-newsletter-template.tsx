@@ -1,4 +1,5 @@
 import * as React from "react";
+import { formatLongPtBr, todayInSaoPaulo } from "../dates.js";
 import { FeedItem } from "../scrapeVaticanNews.js";
 
 interface DailyNewsletterProps {
@@ -22,12 +23,7 @@ interface DailyNewsletterProps {
 
 const DailyNewsletterTemplate: React.FC<DailyNewsletterProps> = ({
   title = "Liturgia Católica Diária",
-  date = new Date().toLocaleDateString("pt-BR", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }),
+  date = formatLongPtBr(todayInSaoPaulo()),
   readings = [],
   saint = { name: "", link: "", resume: "", image: null },
   reflection = null,

@@ -1,91 +1,64 @@
 import * as dotenv from "dotenv";
 import cron from "node-cron";
-import { getRandomAffiliates } from "./affiliate/getAffiliates.js";
-import { checkIfNewsletterExists, saveInSupabase } from "./saveInSupabase.js";
-import { scrapeLiturgiaWebsite } from "./scrapeLiturgiaWebsite.js";
-import { scrapeReflectionOfTheDay } from "./scrapeReflectionOfTheDay.js";
-import { scrapeSaintOfTheDay } from "./scrapeSaintOfTheDay.js";
-import { scrapeVaticanNews } from "./scrapeVaticanNews.js";
-import { sendEmail } from "./sendEmail.js";
+import { SAO_PAULO_TZ } from "./dates.js";
+import { publishLiturgyAhead } from "./publishLiturgy.js";
+import { sendDailyNewsletter } from "./sendDailyNewsletter.js";
+
 dotenv.config();
 
-const isProduction = process.env.IS_PRODUCTION === "true";
-const isRunNow = process.env.RUN_NOW === "true";
-const addDonate = process.env.ADD_DONATE === "true";
+/** 05:30 America/Sao_Paulo, before the send, including the first 30-day backfill. */
+const PUBLISH_CRON = "30 5 * * *";
+/** 06:00 America/Sao_Paulo. Sends today's liturgy only. */
+const SEND_CRON = "0 6 * * *";
 
-/**
- * Runs the daily newsletter workflow: scrapes all data and sends the email.
- */
-async function runDailyNewsletter() {
-  try {
-    console.info("Starting daily newsletter workflow...");
+async function main() {
+  const isProduction = process.env.IS_PRODUCTION === "true";
+  const isRunNow = process.env.RUN_NOW === "true";
+  console.log(
+    `Starting Liturgia Newsletter in ${
+      isProduction ? "production" : "development"
+    } mode (${SAO_PAULO_TZ}).`
+  );
 
-    // Verifica se a liturgia do dia já foi criada
-    const newsletterExists = await checkIfNewsletterExists();
-    if (newsletterExists) {
-      console.info(
-        "Newsletter for today already exists. Skipping email sending and database insertion."
-      );
-      return;
-    }
-
-    const [
-      liturgyData,
-      saintOfTheDayData,
-      reflection,
-      randomAffiliates,
-      vaticanNewsData,
-    ] = await Promise.all([
-      scrapeLiturgiaWebsite(),
-      scrapeSaintOfTheDay(),
-      scrapeReflectionOfTheDay(),
-      getRandomAffiliates(),
-      scrapeVaticanNews(),
-    ]);
-
-    await sendEmail(
-      liturgyData,
-      saintOfTheDayData,
-      reflection,
-      addDonate ? randomAffiliates : null,
-      vaticanNewsData
-    );
-
-    await saveInSupabase(
-      liturgyData,
-      saintOfTheDayData,
-      reflection,
-      vaticanNewsData
-    );
-
-    console.info("Daily newsletter workflow completed.");
-  } catch (error) {
-    console.error("Error running daily newsletter:", error);
+  if (!isProduction) {
+    await publishLiturgyAhead();
+    await sendDailyNewsletter();
+    return;
   }
-}
 
-// Schedule the task based on environment
-console.log(
-  `Starting Liturgia Newsletter Cron Job in ${
-    isProduction ? "production" : "development"
-  } mode...`
-);
-
-if (isProduction) {
-  // Run every day at 9:00 AM server time
-  cron.schedule("0 9 * * *", () => {
-    console.log(
-      "Running daily newsletter task at:",
-      new Date().toLocaleString()
-    );
-    runDailyNewsletter();
-  });
+  const cronOptions = { timezone: SAO_PAULO_TZ };
+  cron.schedule(
+    PUBLISH_CRON,
+    () => {
+      void publishLiturgyAhead().catch((error) => {
+        console.error("Publish job failed:", error);
+      });
+    },
+    cronOptions
+  );
+  cron.schedule(
+    SEND_CRON,
+    () => {
+      // sendDailyNewsletter throws after recording the failure. The catch
+      // keeps this process scheduled for the next day; it does not mark the
+      // email as sent.
+      void sendDailyNewsletter().catch((error) => {
+        console.error("Daily send failed:", error);
+      });
+    },
+    cronOptions
+  );
+  console.log(
+    `Publish scheduled at ${PUBLISH_CRON} and send at ${SEND_CRON} (${SAO_PAULO_TZ}).`
+  );
 
   if (isRunNow) {
-    console.log("Running daily newsletter task immediately...");
-    runDailyNewsletter();
+    await publishLiturgyAhead();
+    await sendDailyNewsletter();
   }
-} else {
-  // In development, run immediately
-  runDailyNewsletter();
 }
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

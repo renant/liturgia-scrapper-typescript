@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "npx tsx src/index.ts",
-    "test": "jest"
+    "test": "node --import tsx --test src/dates.test.ts src/liturgyCalendar.test.ts src/newsletterPlan.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.52.0",

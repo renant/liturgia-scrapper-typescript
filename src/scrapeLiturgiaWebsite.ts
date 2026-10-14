@@ -1,54 +1,63 @@
-import axios from "axios";
+import axios, { type AxiosRequestConfig } from "axios";
 import * as cheerio from "cheerio";
+import { CivilDate, civilEqual } from "./dates.js";
+import { liturgySlug, readDisplayedLiturgyDate } from "./liturgyCalendar.js";
 
 export type LiturgiaData = {
   title: string;
   liturgies: string[];
 };
 
+const REQUEST_HEADERS = {
+  "User-Agent": "LiturgiaNewsBot/1.0 (+https://www.liturgianews.site)",
+  Accept: "text/html,application/xhtml+xml",
+};
+
+export async function fetchText(
+  url: string,
+  config?: AxiosRequestConfig
+): Promise<string> {
+  const response = await axios.request({
+    url,
+    timeout: 30_000,
+    responseType: "text",
+    ...config,
+    headers: {
+      ...REQUEST_HEADERS,
+      ...config?.headers,
+    },
+  });
+  return typeof response.data === "string" ? response.data : "";
+}
+
 /**
- * Scrapes the daily liturgy from Canção Nova's website.
- * Returns null if scraping fails or the structure changes.
+ * Returns the liturgy only when the page badge matches `date` and the
+ * canonical slug matches the calendar link. Query params alone are not
+ * trusted: the badge echoes them, so a redirected or substituted page
+ * (different slug, or today's badge) is skipped.
  */
-export async function scrapeLiturgiaWebsite(): Promise<LiturgiaData | null> {
-  try {
-    const response = await axios.get("https://liturgia.cancaonova.com/pb");
-    const html = response.data;
-    const $ = cheerio.load(html);
+export function extractLiturgyFromHtml(
+  html: string,
+  requested: { date: CivilDate; slug: string }
+): LiturgiaData | null {
+  const $ = cheerio.load(html);
+  const displayed = readDisplayedLiturgyDate(html);
+  if (!displayed || !civilEqual(displayed, requested.date)) return null;
 
-    // Extract the main title
-    const entryTitle = $(".entry-title").html() ?? "";
-    const liturgies: string[] = [];
+  const canonical = $('link[rel="canonical"]').attr("href") ?? "";
+  const slug = liturgySlug(canonical);
+  if (!slug || slug !== requested.slug.toLowerCase()) return null;
 
-    // Try to extract up to 4 liturgy sections
-    for (let i = 1; i <= 4; i++) {
-      const liturgyDiv = $(`#liturgia-${i}`);
-      if (liturgyDiv.length === 0) continue;
-      liturgyDiv.find(".embeds-audio").remove();
-      const liturgy = liturgyDiv.html();
-      if (liturgy) {
-        liturgies.push(liturgy);
-      }
-    }
-
-    if (!entryTitle && liturgies.length === 0) {
-      console.warn(
-        "No liturgy data found on the page. Structure may have changed."
-      );
-      return null;
-    }
-
-    const liturgiaData = {
-      title: entryTitle,
-      liturgies,
-    };
-
-    console.info("Liturgy data scraped successfully.");
-    return liturgiaData as LiturgiaData;
-  } catch (error) {
-    console.error("Error scraping liturgy website:", error);
-    return null;
-  } finally {
-    console.log("Scraping liturgy website finished");
+  const entryTitle = $(".entry-title").html() ?? "";
+  const liturgies: string[] = [];
+  for (let i = 1; i <= 4; i++) {
+    const liturgyDiv = $(`#liturgia-${i}`);
+    if (liturgyDiv.length === 0) continue;
+    liturgyDiv.find(".embeds-audio").remove();
+    const liturgy = liturgyDiv.html();
+    if (liturgy) liturgies.push(liturgy);
   }
+
+  if (!entryTitle && liturgies.length === 0) return null;
+  return { title: entryTitle, liturgies };
 }
