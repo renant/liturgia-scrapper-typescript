@@ -1,8 +1,31 @@
 import puppeteer from "puppeteer";
+import { load } from "cheerio";
 
 export type ReflectionOfTheDayData = {
   text: string;
 };
+
+export function extractReflectionText(html: string): string {
+  const $ = load(html);
+  const heading = $(".tittleinterno, .subtitulo-liturgia")
+    .filter((_, element) => /^Reflexão\s*:?$/i.test($(element).text().trim()))
+    .first();
+  const paragraphs: string[] = [];
+
+  // Reflection paragraphs are siblings of the heading; stop before other sections.
+  let next = heading.next();
+  while (next.length && next.is("p, br")) {
+    if (next.is("p")) {
+      const text = next.text().replace(/\s+/g, " ").trim();
+      if (text && !/^Pistas? para reflex[aã]o\s*:?$/i.test(text)) {
+        paragraphs.push(text);
+      }
+    }
+    next = next.next();
+  }
+
+  return paragraphs.join("\n\n");
+}
 
 /**
  * Scrapes the reflection of the day from the Paulus website.
@@ -24,17 +47,12 @@ export async function scrapeReflectionOfTheDay(): Promise<ReflectionOfTheDayData
     });
 
     // Extract the reflection text from the page
-    const reflectionText = await page.evaluate(() => {
-      const reflectionDiv = document.querySelector(".tittleinterno");
-      if (reflectionDiv) {
-        let next = reflectionDiv.nextElementSibling;
-        while (next && next.tagName !== "P") {
-          next = next.nextElementSibling;
-        }
-        return next?.textContent || "";
-      }
-      return "";
-    });
+    const reflectionText = extractReflectionText(await page.content());
+
+    if (!reflectionText) {
+      console.warn("No reflection text found on the Paulus website.");
+      return null;
+    }
 
     console.info("Reflection text scraped successfully.");
     return {
