@@ -1,47 +1,30 @@
-FROM node:20-bullseye as builder
+FROM node:22-bookworm-slim AS builder
+
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:20-bullseye
+FROM node:22-bookworm-slim
 
-# Install dependencies for Puppeteer
+# APT installs Chromium's runtime dependencies automatically.
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     fonts-liberation \
-    libasound2 \
-    libatk-bridge2.0-0 \
-    libatk1.0-0 \
-    libcups2 \
-    libdrm2 \
-    libgbm1 \
-    libgtk-3-0 \
-    libnspr4 \
-    libnss3 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    xdg-utils \
-    libu2f-udev \
-    libxshmfence1 \
-    libglu1-mesa \
     chromium \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-    # Set environment variables for Puppeteer
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-PUPPETEER_ARGS=--no-sandbox
-
+# Use the system Chromium instead of downloading another browser.
+ENV PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --production
+RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
-
 
 CMD ["node", "dist/index.js"]
